@@ -54,6 +54,20 @@ app.get("/data", async (req, res, next) => {
     next(error);
   }
 });
+// functions
+const userDataStall = async (data, uid) => {
+  await database.ref(`Users/${uid}/`).set(data);
+  return 1;
+};
+const exhibitorStall = async (uid) => {
+  await database.ref(`EXHIBITORS/${uid}/stall`).set(uid);
+  return 1;
+};
+const exhibitorStallMember = async (stallID, uid) => {
+  await database.ref(`EXHIBITORS/${stallID}/StallMember/${uid}`).set(uid);
+  return 1;
+};
+//function end
 //for stall entry
 app.post("/", async (req, res, next) => {
   try {
@@ -65,65 +79,66 @@ app.post("/", async (req, res, next) => {
     const response = await auth.createUserWithEmailAndPassword(email, password);
     //stall
     if (role === "stall") {
-      await database.ref(`Users/${response.user.uid}/`).set({
+      const raw = {
         role: "stall",
         stallID: response.user.uid,
         password,
         email,
         isActive: true,
-      });
-      // .then((da) => console.log(da));
-      // console.log(sendUser);
-      // if (!sendUser)
-      //   throw createError.Forbidden("Stall is not save in User database.");
-      //const dataInExibition =
-      await database
-        .ref(`EXHIBITORS/${response.user.uid}/stall`)
-        .set(response.user.uid);
-      // if (!dataInExibition)
-      //   throw createError.Forbidden("Stall is not stored in EXHIBITORS");
+      };
+      const userInsert = await userDataStall(raw, response.user.uid);
+      if (!userInsert)
+        throw createError.Forbidden("Stall does not save in User");
+      const exib = await exhibitorStall(response.user.uid);
+      if (!exib)
+        throw createError.Forbidden("stall does not save in EXHIBITORS.");
       res.json({ data: "stall save success fully..." });
-      //stall member
     } else if (role === "StallMember") {
-      //const stallMemberExibitor =
-      await database
-        .ref(`EXHIBITORS/${stallID}/StallMember/${response.user.uid}`)
-        .set(response.user.uid);
-      // if (!stallMemberExibitor)
-      //   throw createError.Forbidden("Stall member doesn't save in EXHIBITOR. ");
-      //const stallMemberUser =
-      await database.ref(`Users/${response.user.uid}/`).set({
+      const stallMemberExibitor = await exhibitorStallMember(
+        stallID,
+        response.user.uid
+      );
+      if (!stallMemberExibitor)
+        throw createError.Forbidden(
+          "Stall member does not save in EXHIBITORS.."
+        );
+      const rawDataStallMember = {
         role: "StallMember",
         password,
         stallID,
         email,
-      });
-      // if (!stallMemberUser)
-      //   throw createError.Forbidden(
-      //     "Stall member does not save in user database."
-      //   );
+      };
+      const stallMemberUserData = await userDataStall(
+        rawDataStallMember,
+        response.user.uid
+      );
+      if (!stallMemberUserData)
+        throw Forbidden("Stall member does not save in EXHIBITORS Member");
+
       res.json({ data: "stall member save successfully.." });
       //speaker
-    } else if (role === "speaker") {
-      //const speakerUser =
-      await database.ref(`Users/${response.user.uid}/`).set({
-        name,
+    } else if (role == "speaker") {
+      const speakerUser = {
         role: "speaker",
         password,
         email,
-      });
-      // if (!speakerUser)
-      //   throw createError.Forbidden(
-      //     "Some how speaker does not save in User database..."
-      //   );
+      };
+      const saveUser = await userDataStall(speakerUser, response.user.uid);
+      if (!saveUser)
+        throw createError.Forbidden("Speaker does not save in User.");
+
       res.json({ data: "Speaker is save successfully..." });
     } else if (role === "SpeakerMember") {
-      await database.ref(`Users/${response.user.uid}`).set({
+      const rawSpeaker = {
         role: "SpeakerMember",
         password,
         speakerID,
         email,
-      });
+      };
+      const saverUserData = await userDataStall(rawSpeaker, response.user.uid);
+      if (!saverUserData)
+        throw createError.Forbidden("Speaker Member does not save in User");
+
       res.json({ data: "Speaker member is save successfully... " });
     }
   } catch (error) {
