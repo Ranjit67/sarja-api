@@ -57,7 +57,7 @@ app.get("/data", async (req, res, next) => {
 //for stall entry
 app.post("/", async (req, res, next) => {
   try {
-    const { email, password, role, stallID, name } = req.body;
+    const { email, password, role, stallID, name, speakerID } = req.body;
     if (!email || !password || !role)
       throw createError.BadRequest(
         "Email,password and role, All three field are required.."
@@ -116,6 +116,14 @@ app.post("/", async (req, res, next) => {
       //     "Some how speaker does not save in User database..."
       //   );
       res.json({ data: "Speaker is save successfully..." });
+    } else if (role === "SpeakerMember") {
+      await database.ref(`Users/${response.user.uid}`).set({
+        role: "SpeakerMember",
+        password,
+        speakerID,
+        email,
+      });
+      res.json({ data: "Speaker member is save successfully... " });
     }
   } catch (error) {
     if (error.status === 500) {
