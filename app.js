@@ -70,6 +70,7 @@ app.post("/", async (req, res, next) => {
         stallID: response.user.uid,
         password,
         email,
+        isActive: true,
       });
       // .then((da) => console.log(da));
       // console.log(sendUser);
