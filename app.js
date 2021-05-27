@@ -122,6 +122,7 @@ app.post("/", async (req, res, next) => {
         role: "speaker",
         password,
         email,
+        speakerID: response.user.uid,
       };
       const saveUser = await userDataStall(speakerUser, response.user.uid);
       if (!saveUser)
