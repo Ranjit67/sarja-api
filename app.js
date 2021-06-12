@@ -208,6 +208,7 @@ app.post("/emailSend", async (req, res, next) => {
       Welcome to ${RoomName} event, Event start on ${eventData} at ${startTime} to ${endTime}.`,
     };
     const send = await transport.sendMail(mailOption);
+    res.json({ data: "mail send successfully.." });
   } catch (error) {
     next(error);
   }
