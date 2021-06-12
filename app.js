@@ -81,7 +81,7 @@ const exhibitorStallMember = async (stallID, uid) => {
 //for stall entry
 app.post("/", async (req, res, next) => {
   try {
-    const { email, password, role, stallID, name, speakerID, eventUid } =
+    const { email, password, role, stallID, name, speakerID, eventData } =
       req.body;
     if (!email || !password || !role)
       throw createError.BadRequest(
@@ -134,7 +134,7 @@ app.post("/", async (req, res, next) => {
         password,
         email,
         speakerID: response.user.uid,
-        eventUid,
+        eventData,
       };
       const saveUser = await userDataStall(speakerUser, response.user.uid);
       if (!saveUser)
@@ -154,7 +154,7 @@ app.post("/", async (req, res, next) => {
         password,
         speakerID,
         email,
-        eventUid,
+        eventData,
       };
       const saverUserData = await userDataStall(rawSpeaker, response.user.uid);
       if (!saverUserData)
