@@ -1,5 +1,6 @@
 const express = require("express");
 const createError = require("http-errors");
+const nodemailer = require("nodemailer");
 var firebase = require("firebase");
 const morgan = require("morgan");
 require("dotenv").config();
@@ -47,6 +48,15 @@ const auth = fire.auth();
 const database = fire.database();
 //end firebase
 //route part
+//email
+let transport = nodemailer.createTransport({
+  service: "gmail",
+  auth: {
+    user: "no.reply.reveal@gmail.com",
+    pass: "revealP@ssw0rd",
+  },
+});
+//email end
 app.get("/data", async (req, res, next) => {
   try {
     res.json({ data: "data send" });
@@ -71,7 +81,8 @@ const exhibitorStallMember = async (stallID, uid) => {
 //for stall entry
 app.post("/", async (req, res, next) => {
   try {
-    const { email, password, role, stallID, name, speakerID } = req.body;
+    const { email, password, role, stallID, name, speakerID, eventUid } =
+      req.body;
     if (!email || !password || !role)
       throw createError.BadRequest(
         "Email,password and role, All three field are required.."
@@ -123,10 +134,18 @@ app.post("/", async (req, res, next) => {
         password,
         email,
         speakerID: response.user.uid,
+        eventUid,
       };
       const saveUser = await userDataStall(speakerUser, response.user.uid);
       if (!saveUser)
         throw createError.Forbidden("Speaker does not save in User.");
+      const mailOption = {
+        from: `exposiam@gmail.com <foo@example.com>`,
+        to: email,
+        subject: `Thank you for register`,
+        text: `Welcome to speaker panel`,
+      };
+      const send = await transport.sendMail(mailOption);
 
       res.json({ data: "Speaker is save successfully..." });
     } else if (role === "SpeakerMember") {
@@ -135,10 +154,19 @@ app.post("/", async (req, res, next) => {
         password,
         speakerID,
         email,
+        eventUid,
       };
       const saverUserData = await userDataStall(rawSpeaker, response.user.uid);
       if (!saverUserData)
         throw createError.Forbidden("Speaker Member does not save in User");
+
+      const mailOption = {
+        from: `exposiam@gmail.com <foo@example.com>`,
+        to: email,
+        subject: `Thank you for register`,
+        text: `Welcome to speaker panel`,
+      };
+      const send = await transport.sendMail(mailOption);
 
       res.json({ data: "Speaker member is save successfully... " });
     }
