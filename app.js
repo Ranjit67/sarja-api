@@ -81,8 +81,19 @@ const exhibitorStallMember = async (stallID, uid) => {
 //for stall entry
 app.post("/", async (req, res, next) => {
   try {
-    const { email, password, role, stallID, name, speakerID, eventData } =
-      req.body;
+    const {
+      email,
+      password,
+      role,
+      stallID,
+      name,
+      speakerID,
+      eventData,
+      RoomID,
+      RoomName,
+      startTime,
+      endTime,
+    } = req.body;
     if (!email || !password || !role)
       throw createError.BadRequest(
         "Email,password and role, All three field are required.."
@@ -152,7 +163,10 @@ app.post("/", async (req, res, next) => {
       const rawSpeaker = {
         role: "SpeakerMember",
         password,
-        speakerID,
+        RoomID,
+        RoomName,
+        startTime,
+        endTime,
         email,
         eventData,
       };
@@ -164,7 +178,8 @@ app.post("/", async (req, res, next) => {
         from: `exposiam@gmail.com <foo@example.com>`,
         to: email,
         subject: `Thank you for register`,
-        text: `Welcome to speaker panel`,
+        text: `Hi
+        Welcome to ${RoomName} event, Event start on ${eventData} at ${startTime} to ${endTime}.`,
       };
       const send = await transport.sendMail(mailOption);
 
@@ -180,6 +195,23 @@ app.post("/", async (req, res, next) => {
   }
 });
 //route end
+//only mail send route
+app.post("/emailSend", (req, res, next) => {
+  try {
+    const { email, RoomName, startTime, endTime, eventData } = req.body;
+    if (!email) throw createError.BadRequest("Email is important.");
+    const mailOption = {
+      from: `exposiam@gmail.com <foo@example.com>`,
+      to: email,
+      subject: `Thank you for register`,
+      text: `Hi
+      Welcome to ${RoomName} event, Event start on ${eventData} at ${startTime} to ${endTime}.`,
+    };
+    const send = await transport.sendMail(mailOption);
+  } catch (error) {
+    next(error);
+  }
+});
 //error handel
 app.use(async (req, res, next) => {
   next(createError.NotFound());
