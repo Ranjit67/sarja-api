@@ -196,7 +196,7 @@ app.post("/", async (req, res, next) => {
 });
 //route end
 //only mail send route
-app.post("/emailSend", (req, res, next) => {
+app.post("/emailSend", async (req, res, next) => {
   try {
     const { email, RoomName, startTime, endTime, eventData } = req.body;
     if (!email) throw createError.BadRequest("Email is important.");
