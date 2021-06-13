@@ -88,7 +88,7 @@ app.post("/", async (req, res, next) => {
       stallID,
       name,
       speakerID,
-      eventData,
+      eventDate,
       RoomID,
       RoomName,
       startTime,
@@ -145,7 +145,7 @@ app.post("/", async (req, res, next) => {
         password,
         email,
         speakerID: response.user.uid,
-        eventData,
+        eventDate,
       };
       const saveUser = await userDataStall(speakerUser, response.user.uid);
       if (!saveUser)
@@ -159,7 +159,7 @@ app.post("/", async (req, res, next) => {
       const send = await transport.sendMail(mailOption);
 
       res.json({ data: "Speaker is save successfully..." });
-    } else if (role === "SpeakerMember") {
+    } else if (role == "SpeakerMember") {
       const rawSpeaker = {
         role: "SpeakerMember",
         password,
@@ -168,7 +168,7 @@ app.post("/", async (req, res, next) => {
         startTime,
         endTime,
         email,
-        eventData,
+        eventDate,
       };
       const saverUserData = await userDataStall(rawSpeaker, response.user.uid);
       if (!saverUserData)
@@ -179,7 +179,7 @@ app.post("/", async (req, res, next) => {
         to: email,
         subject: `Thank you for register`,
         text: `Hi
-        Welcome to ${RoomName} event, Event start on ${eventData} at ${startTime} to ${endTime}.`,
+        Welcome to ${RoomName} event, Event start on ${eventDate} at ${startTime} to ${endTime}.`,
       };
       const send = await transport.sendMail(mailOption);
 
@@ -198,14 +198,14 @@ app.post("/", async (req, res, next) => {
 //only mail send route
 app.post("/emailSend", async (req, res, next) => {
   try {
-    const { email, RoomName, startTime, endTime, eventData } = req.body;
+    const { email, RoomName, startTime, endTime, eventDate } = req.body;
     if (!email) throw createError.BadRequest("Email is important.");
     const mailOption = {
       from: `exposiam@gmail.com <foo@example.com>`,
       to: email,
       subject: `Thank you for register`,
       text: `Hi
-      Welcome to ${RoomName} event, Event start on ${eventData} at ${startTime} to ${endTime}.`,
+      Welcome to ${RoomName} event, Event start on ${eventDate} at ${startTime} to ${endTime}.`,
     };
     const send = await transport.sendMail(mailOption);
     res.json({ data: "mail send successfully.." });
